@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>아신대학교 규정 검색 · 비교 챗봇</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>아신대학교 규정 검색 · 비교</h1>
+      <p class="subtitle">규정집(2026.07.11) 전체 조항을 대상으로 자연어로 검색하고, 규정 간 상호 비교를 물어볼 수 있습니다.</p>
+    </header>
+
+    <section class="ask-box">
+      <textarea id="question" rows="3" placeholder="예: 교원 정년과 직원 정년 규정을 비교해줘 / 징계 시효는 몇 년이야?"></textarea>
+      <button id="askBtn">질문하기</button>
+    </section>
+
+    <p id="status" class="status">초기화 중...</p>
+
+    <section class="answer-box">
+      <pre id="answer"></pre>
+      <p id="sources" class="sources"></p>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
