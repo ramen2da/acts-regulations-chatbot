@@ -223,6 +223,15 @@ function buildPrompt(question, topChunks) {
   );
 }
 
+function stripMarkdown(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/`([^`]*)`/g, "$1")
+    .replace(/^#{1,6}\s*/gm, "");
+}
+
 async function askGemini(prompt) {
   const res = await fetch(CONFIG.GEMINI_PROXY_URL, {
     method: "POST",
@@ -234,7 +243,8 @@ async function askGemini(prompt) {
   });
   if (!res.ok) throw new Error(`Gemini 프록시 오류: ${res.status}`);
   const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ?? "(응답 없음)";
+  const raw = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ?? "(응답 없음)";
+  return stripMarkdown(raw);
 }
 
 async function handleAsk() {
