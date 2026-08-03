@@ -107,9 +107,13 @@ function renderLookupResults(baseChunk, results) {
     const card = document.createElement("div");
     card.className = "result-card";
 
+    const barWidth = Math.max(0, Math.min(100, Math.round(score * 100)));
     const head = document.createElement("div");
     head.className = "result-head";
-    head.innerHTML = `<span>${chunk.section_path}</span><span class="result-score">유사도 ${score.toFixed(3)}</span>`;
+    head.innerHTML =
+      `<span class="section-path">${chunk.section_path}</span>` +
+      `<span class="score-wrap"><span class="score-bar"><span style="width:${barWidth}%"></span></span>` +
+      `<span class="score-num">${score.toFixed(3)}</span></span>`;
 
     const text = document.createElement("p");
     text.className = "result-text collapsed";
@@ -274,5 +278,12 @@ els.question.addEventListener("keydown", (e) => {
 
 els.regSelect.addEventListener("change", populateArticleSelect);
 els.lookupBtn.addEventListener("click", handleLookup);
+
+document.querySelectorAll(".chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    els.question.value = chip.dataset.q;
+    handleAsk();
+  });
+});
 
 loadCorpus().catch((err) => setStatus(`로드 오류: ${err.message}`));

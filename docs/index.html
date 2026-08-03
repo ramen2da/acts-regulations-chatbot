@@ -3,41 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>아신대학교 규정 검색 · 비교 챗봇</title>
+  <meta name="description" content="아신대학교 규정집(2026.07.11) 전체 조항을 자연어로 검색하고, 규정 간 상호 비교·불일치를 확인하는 도구입니다." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📖%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <title>아신대학교 규정 검색 · 비교</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="wrap">
-    <header>
-      <h1>아신대학교 규정 검색 · 비교</h1>
-      <p class="subtitle">규정집(2026.07.11) 전체 조항을 대상으로 자연어로 검색하고, 규정 간 상호 비교를 물어볼 수 있습니다.</p>
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">📖</span>
+        <div>
+          <h1>아신대학교 규정 검색 · 비교</h1>
+          <p class="subtitle">규정집(2026.07.11) 전체 조항을 자연어로 검색하고, 규정 간 상호 비교·불일치를 확인합니다.</p>
+        </div>
+      </div>
+      <span class="badge">119개 규정 · 2,074개 조항</span>
     </header>
 
-    <section class="ask-box">
+    <section class="card ask-card">
+      <label class="card-label" for="question">무엇이 궁금하신가요?</label>
       <textarea id="question" rows="3" placeholder="예: 교원 정년과 직원 정년 규정을 비교해줘 / 징계 시효는 몇 년이야?"></textarea>
-      <button id="askBtn">질문하기</button>
+
+      <div class="example-chips">
+        <button class="chip" type="button" data-q="교원 정년과 직원 정년 규정을 비교해줘">교원·직원 정년 비교</button>
+        <button class="chip" type="button" data-q="징계 시효는 몇 년이야?">징계 시효</button>
+        <button class="chip" type="button" data-q="교원징계위원회 위원은 몇 명으로 구성돼?">징계위원회 구성</button>
+      </div>
+
+      <button id="askBtn" class="primary-btn">질문하기</button>
+
+      <p id="status" class="status">초기화 중...</p>
+
+      <div class="answer-box">
+        <div class="answer-label">AI 답변</div>
+        <pre id="answer"></pre>
+        <p id="sources" class="sources"></p>
+      </div>
     </section>
 
-    <p id="status" class="status">초기화 중...</p>
-
-    <section class="answer-box">
-      <pre id="answer"></pre>
-      <p id="sources" class="sources"></p>
-    </section>
-
-    <hr />
-
-    <section class="lookup-box">
+    <section class="card lookup-card">
       <h2>조항 지정 → 다른 규정에서 비슷한 내용 찾기</h2>
-      <p class="subtitle">특정 조항을 고르면 다른 규정들 중 내용이 비슷한 조항을 유사도 순으로 찾아줍니다. 정관·상위 규정을 개정할 때 함께 검토할 곳을 확인하는 용도입니다.</p>
+      <p class="card-desc">특정 조항을 고르면 다른 규정들 중 내용이 비슷한 조항을 유사도 순으로 찾아줍니다. 정관·상위 규정을 개정할 때 함께 검토할 곳을 확인하는 용도입니다.</p>
       <div class="lookup-controls">
-        <select id="regSelect"></select>
-        <select id="articleSelect"></select>
-        <button id="lookupBtn">유사 조항 찾기</button>
+        <select id="regSelect" aria-label="규정 선택"></select>
+        <select id="articleSelect" aria-label="조항 선택"></select>
+        <button id="lookupBtn" class="primary-btn">유사 조항 찾기</button>
       </div>
       <p id="lookupStatus" class="status"></p>
       <div id="lookupResults" class="lookup-results"></div>
     </section>
+
+    <footer class="site-footer">
+      <p>
+        데이터: <a href="https://www.acts.ac.kr" target="_blank" rel="noopener">아신대학교(ACTS)</a> 규정집(2026.07.11) ·
+        임베딩: BAAI/bge-m3 · 답변 생성: Gemini ·
+        <a href="https://github.com/ramen2da/acts-regulations-chatbot" target="_blank" rel="noopener">소스코드</a>
+      </p>
+    </footer>
   </main>
 
   <script src="config.js"></script>
