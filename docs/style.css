@@ -106,3 +106,91 @@ button:disabled {
   font-size: 0.8rem;
   word-break: break-all;
 }
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+
+.lookup-box h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.lookup-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+select {
+  flex: 1;
+  min-width: 160px;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--box-bg);
+  color: var(--fg);
+  font-size: 0.95rem;
+}
+
+.lookup-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.result-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: var(--box-bg);
+}
+
+.result-card .result-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.result-card .result-score {
+  color: var(--accent);
+  font-weight: 400;
+}
+
+.result-card .result-text {
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.result-card .result-text.collapsed {
+  max-height: 4.5em;
+  overflow: hidden;
+  position: relative;
+}
+
+.result-card .toggle-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 0.25rem 0;
+  font-size: 0.8rem;
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+.compare-btn {
+  margin-top: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  align-self: flex-start;
+}
