@@ -1,11 +1,13 @@
 import os
 import re
 import json
+from pypdf import PdfReader
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PDF_DIR = os.path.join(BASE_DIR, "..", "pdfs")
 MASTER_TEXT_PATH = os.path.join(BASE_DIR, "..", "규정집_전체텍스트.txt")
 OUT_PATH = os.path.join(BASE_DIR, "chunks.jsonl")
-SOURCE_FILE = "규정집(2026.07.11).pdf"
+MASTER_FILE = "규정집(2026.07.11).pdf"
 
 PAGE_MARKER_RE = re.compile(r"===== PAGE (\d+) =====\n")
 # each regulation's page repeats a running header "N. 제목" followed by
@@ -100,7 +102,7 @@ def group_into_regulations(pages):
     return ordered
 
 
-def split_articles(regulation_name, pages):
+def split_articles(regulation_name, pages, source_file):
     """Split one regulation's pages into article-level chunks."""
     full_text = "\n".join(text for _, text in pages)
 
@@ -128,7 +130,7 @@ def split_articles(regulation_name, pages):
             return None
         return {
             "regulation": regulation_name,
-            "source_file": SOURCE_FILE,
+            "source_file": source_file,
             "article_no": article_no,
             "article_title": article_title,
             "section_path": f"{regulation_name} > {article_no}({article_title})"
@@ -164,6 +166,11 @@ def split_articles(regulation_name, pages):
     return chunks
 
 
+def extract_standalone_pdf_pages(path):
+    reader = PdfReader(path)
+    return [(i, page.extract_text() or "") for i, page in enumerate(reader.pages, 1)]
+
+
 def main():
     pages = load_pages(MASTER_TEXT_PATH)
     print(f"Loaded {len(pages)} pages from {MASTER_TEXT_PATH}")
@@ -173,9 +180,23 @@ def main():
 
     all_chunks = []
     for i, seg in enumerate(segments, 1):
-        chunks = split_articles(seg["title"], seg["pages"])
+        chunks = split_articles(seg["title"], seg["pages"], MASTER_FILE)
         all_chunks.extend(chunks)
         print(f"[{i}/{len(segments)}] {seg['title']}: {len(seg['pages'])}p, {len(chunks)} chunks")
+
+    # standalone PDFs: each individual file is its own regulation, no
+    # running-header grouping needed since there's nothing else to merge with
+    standalone_files = sorted(
+        f for f in os.listdir(PDF_DIR)
+        if f.lower().endswith(".pdf") and f != MASTER_FILE
+    )
+    print(f"\nFound {len(standalone_files)} standalone regulation PDFs")
+    for i, fname in enumerate(standalone_files, 1):
+        regulation_name = os.path.splitext(fname)[0]
+        pdf_pages = extract_standalone_pdf_pages(os.path.join(PDF_DIR, fname))
+        chunks = split_articles(regulation_name, pdf_pages, fname)
+        all_chunks.extend(chunks)
+        print(f"[{i}/{len(standalone_files)}] {fname}: {len(pdf_pages)}p, {len(chunks)} chunks")
 
     with open(OUT_PATH, "w", encoding="utf-8") as out:
         for idx, c in enumerate(all_chunks):
