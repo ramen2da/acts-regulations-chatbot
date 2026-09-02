@@ -3,7 +3,7 @@
   "denseDim": 1024,
   "sparseFormat": "token_id -> weight, zero values excluded",
   "colbert": false,
-  "buildId": "1787837503",
+  "buildId": "1788354095",
   "shards": [
     "규정집.json"
   ]

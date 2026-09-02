@@ -171,6 +171,57 @@ def extract_standalone_pdf_pages(path):
     return [(i, page.extract_text() or "") for i, page in enumerate(reader.pages, 1)]
 
 
+# Display/search order: 정관 - 대학 - 대학원 - 일반행정 - 부속기관 및 부설기관 - 산학협력단.
+# The compiled 규정집's own page order already runs 정관 -> 일반행정 -> 부속기관 ->
+# 산학협력단 (matching its table of contents), so only 대학/대학원 need inserting
+# between 정관 and 일반행정. Within the master doc, 정관 is always the first 3
+# regulation segments (정관/정관시행세칙/법인사무분장규정) after the cover segment,
+# 일반행정 is the next 95 (Ⅱ.A~D), 부속기관 the next 19 (Ⅲ), 산학협력단 the last 2 (Ⅳ).
+CHARTER_COUNT = 3
+GENERAL_ADMIN_COUNT = 95
+AFFILIATED_COUNT = 19
+
+UNIVERSITY_FILES = [
+    "학칙_260623개정(재입학개정 반영).pdf",
+]
+
+GRADUATE_SCHOOL_FILES = [
+    "대학원_학칙(2025-09-25).pdf",
+    "대학원_학사내규(2026-01-20).pdf",
+    "교육과정_및_이수학점에_관한_규정(2026-04-30).pdf",
+    "재입학에_관한_규정.pdf",
+    "전과_및_전공변경에_관한_규정.pdf",
+    "청강에_관한_규정(2024-09-12).pdf",
+    "개인지도에_관한_규정(2023-09-18).pdf",
+    "학점교환제에_관한_규정.pdf",
+    "학위논문에_관한_규정(2025-04-25).pdf",
+    "장학금_지급에_관한_규정.pdf",
+    "장학금운영_시행세칙(2026-01-20).pdf",
+    "전문상담교사(1급)_양성과정_운영규정.pdf",
+    "경건생활관리규정.pdf",
+]
+
+
+def process_master_group(segments, label):
+    chunks = []
+    for i, seg in enumerate(segments, 1):
+        seg_chunks = split_articles(seg["title"], seg["pages"], MASTER_FILE)
+        chunks.extend(seg_chunks)
+        print(f"  [{label} {i}/{len(segments)}] {seg['title']}: {len(seg['pages'])}p, {len(seg_chunks)} chunks")
+    return chunks
+
+
+def process_standalone_group(filenames, label):
+    chunks = []
+    for i, fname in enumerate(filenames, 1):
+        regulation_name = os.path.splitext(fname)[0]
+        pdf_pages = extract_standalone_pdf_pages(os.path.join(PDF_DIR, fname))
+        reg_chunks = split_articles(regulation_name, pdf_pages, fname)
+        chunks.extend(reg_chunks)
+        print(f"  [{label} {i}/{len(filenames)}] {fname}: {len(pdf_pages)}p, {len(reg_chunks)} chunks")
+    return chunks
+
+
 def main():
     pages = load_pages(MASTER_TEXT_PATH)
     print(f"Loaded {len(pages)} pages from {MASTER_TEXT_PATH}")
@@ -178,25 +229,39 @@ def main():
     segments = group_into_regulations(pages)
     print(f"Grouped into {len(segments)} regulation segments")
 
-    all_chunks = []
-    for i, seg in enumerate(segments, 1):
-        chunks = split_articles(seg["title"], seg["pages"], MASTER_FILE)
-        all_chunks.extend(chunks)
-        print(f"[{i}/{len(segments)}] {seg['title']}: {len(seg['pages'])}p, {len(chunks)} chunks")
+    cover = segments[0:1]
+    charter = segments[1 : 1 + CHARTER_COUNT]
+    general_admin = segments[1 + CHARTER_COUNT : 1 + CHARTER_COUNT + GENERAL_ADMIN_COUNT]
+    affiliated = segments[
+        1 + CHARTER_COUNT + GENERAL_ADMIN_COUNT
+        : 1 + CHARTER_COUNT + GENERAL_ADMIN_COUNT + AFFILIATED_COUNT
+    ]
+    industry = segments[1 + CHARTER_COUNT + GENERAL_ADMIN_COUNT + AFFILIATED_COUNT :]
 
-    # standalone PDFs: each individual file is its own regulation, no
-    # running-header grouping needed since there's nothing else to merge with
-    standalone_files = sorted(
+    all_chunks = []
+    print("\n[정관]")
+    all_chunks += process_master_group(charter, "정관")
+    print("\n[대학]")
+    all_chunks += process_standalone_group(UNIVERSITY_FILES, "대학")
+    print("\n[대학원]")
+    all_chunks += process_standalone_group(GRADUATE_SCHOOL_FILES, "대학원")
+    print("\n[일반행정]")
+    all_chunks += process_master_group(general_admin, "일반행정")
+    print("\n[부속기관 및 부설기관]")
+    all_chunks += process_master_group(affiliated, "부속기관")
+    print("\n[산학협력단]")
+    all_chunks += process_master_group(industry, "산학협력단")
+    print("\n[표지/목차 (검색에는 노출되지 않음)]")
+    all_chunks += process_master_group(cover, "표지")
+
+    accounted_for = set(UNIVERSITY_FILES) | set(GRADUATE_SCHOOL_FILES) | {MASTER_FILE}
+    leftover_files = sorted(
         f for f in os.listdir(PDF_DIR)
-        if f.lower().endswith(".pdf") and f != MASTER_FILE
+        if f.lower().endswith(".pdf") and f not in accounted_for
     )
-    print(f"\nFound {len(standalone_files)} standalone regulation PDFs")
-    for i, fname in enumerate(standalone_files, 1):
-        regulation_name = os.path.splitext(fname)[0]
-        pdf_pages = extract_standalone_pdf_pages(os.path.join(PDF_DIR, fname))
-        chunks = split_articles(regulation_name, pdf_pages, fname)
-        all_chunks.extend(chunks)
-        print(f"[{i}/{len(standalone_files)}] {fname}: {len(pdf_pages)}p, {len(chunks)} chunks")
+    if leftover_files:
+        print(f"\n[분류되지 않은 PDF {len(leftover_files)}개 - UNIVERSITY_FILES/GRADUATE_SCHOOL_FILES에 추가 필요]")
+        all_chunks += process_standalone_group(leftover_files, "미분류")
 
     with open(OUT_PATH, "w", encoding="utf-8") as out:
         for idx, c in enumerate(all_chunks):
