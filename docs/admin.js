@@ -180,6 +180,10 @@ function addSectionRow(section, index) {
       </div>
     </div>
     <textarea class="s-text" placeholder="본문">${section.text ?? ""}</textarea>
+    <div class="amend-row">
+      <input class="s-amend-date" type="date" value="${todayIso()}" />
+      <button type="button" class="s-amend-insert">＋ 개정일자 태그를 커서 위치에 삽입</button>
+    </div>
   `;
 
   row.querySelector(".s-del").addEventListener("click", () => row.remove());
@@ -191,8 +195,37 @@ function addSectionRow(section, index) {
     const next = row.nextElementSibling;
     if (next) row.parentNode.insertBefore(next, row);
   });
+  row.querySelector(".s-amend-insert").addEventListener("click", () => {
+    const dateVal = row.querySelector(".s-amend-date").value; // yyyy-mm-dd
+    if (!dateVal) return;
+    const [y, m, d] = dateVal.split("-").map((n) => parseInt(n, 10));
+    const tag = `<개정 ${y}. ${m}. ${d}.>`;
+    insertAtCursor(row.querySelector(".s-text"), tag);
+  });
 
   els.sectionsList.appendChild(row);
+}
+
+function todayIso() {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+function insertAtCursor(textarea, text) {
+  const start = textarea.selectionStart ?? textarea.value.length;
+  const end = textarea.selectionEnd ?? textarea.value.length;
+  const before = textarea.value.slice(0, start);
+  const after = textarea.value.slice(end);
+  // keep tags visually separated from surrounding text like the existing
+  // documents do ("...한다. <개정 2023. 4. 4.> <개정 2023. 12. 14.>...")
+  const spacedBefore = before && !before.endsWith(" ") ? before + " " : before;
+  const spacedAfter = after && !after.startsWith(" ") ? " " + after : after;
+  textarea.value = spacedBefore + text + spacedAfter;
+  const cursorPos = spacedBefore.length + text.length;
+  textarea.focus();
+  textarea.setSelectionRange(cursorPos, cursorPos);
 }
 
 function readSectionsFromForm() {

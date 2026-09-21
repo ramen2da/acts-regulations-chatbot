@@ -181,6 +181,35 @@ button.danger-btn {
   border-color: var(--accent);
 }
 
+.amend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.amend-row input[type="date"] {
+  width: auto;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.amend-row button {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.amend-row button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .editor-actions {
   display: flex;
   gap: 0.6rem;
