@@ -148,7 +148,8 @@ function buildComparePrompt(baseChunk, results) {
     "아래 [기준 조항]과 [발췌 N]들을 비교해서, 서로 같은 내용을 다루는지, " +
     "기준·수치·용어가 다르거나 상충되는 부분이 있는지, " +
     "기준 조항을 개정하면 함께 검토해야 할 발췌가 무엇인지 구체적으로 짚어줘. " +
-    "근거로 쓴 발췌문 번호를 [발췌 N] 형식으로 표시해라.\n\n" +
+    "근거로 쓴 발췌문 번호를 [발췌 N] 형식으로 표시해라. " +
+    `${NO_MARKUP_INSTRUCTION}\n\n` +
     `[기준 조항] (${baseChunk.section_path})\n${baseChunk.text}\n\n${excerpts}`
   );
 }
@@ -206,6 +207,11 @@ function sourceLabel(chunk) {
   return `${chunk.regulation} p.${chunk.pdf_page_start}`;
 }
 
+const NO_MARKUP_INSTRUCTION =
+  "답변은 화면에 그대로 텍스트로 표시되며 HTML이나 마크다운 표는 렌더링되지 않는다. " +
+  "그러니 <table>, <tr>, <td> 같은 HTML 태그나 마크다운 표(| 구분자) 문법을 절대 쓰지 마라. " +
+  "신구조문을 비교할 때는 표 대신 '개정 전: ... / 개정 후: ...' 같은 줄바꿈된 텍스트로 설명해라.";
+
 function buildPrompt(question, topChunks) {
   const excerpts = topChunks
     .map(
@@ -218,7 +224,8 @@ function buildPrompt(question, topChunks) {
     "너는 아신대학교(ACTS) 규정집을 근거로만 답하는 어시스턴트다. " +
     "아래 발췌문에 있는 내용만 사용해서 답하고, 발췌에 없는 내용은 모른다고 말해라. " +
     "규정 간에 서로 다른 기준이나 상충되는 내용이 보이면 반드시 짚어서 알려줘. " +
-    "답변에서 근거로 쓴 발췌문 번호를 [발췌 N] 형식으로 표시해라.\n\n" +
+    "답변에서 근거로 쓴 발췌문 번호를 [발췌 N] 형식으로 표시해라. " +
+    `${NO_MARKUP_INSTRUCTION}\n\n` +
     `${excerpts}\n\n질문: ${question}`
   );
 }
@@ -229,7 +236,11 @@ function stripMarkdown(text) {
     .replace(/__(.*?)__/g, "$1")
     .replace(/\*(.*?)\*/g, "$1")
     .replace(/`([^`]*)`/g, "$1")
-    .replace(/^#{1,6}\s*/gm, "");
+    .replace(/^#{1,6}\s*/gm, "")
+    // safety net: the model is instructed not to use HTML/markdown tables,
+    // but if it slips one in anyway, strip raw tags rather than showing
+    // literal <table>/<tr>/<td> text (the answer box renders as plain text)
+    .replace(/<[^>]+>/g, "");
 }
 
 async function askGemini(prompt) {
