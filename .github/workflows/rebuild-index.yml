@@ -1,0 +1,43 @@
+name: Rebuild search index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/regulations/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install FlagEmbedding torch --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+
+      - name: Build chunks from content/regulations
+        run: python search_app/build_chunks.py
+
+      - name: Build/refresh embeddings (reuses unchanged chunks)
+        run: python search_app/build_embeddings.py
+
+      - name: Commit updated index if changed
+        run: |
+          git config user.name "regulation-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add search_app/chunks.jsonl docs/data/embeddings/
+          if git diff --cached --quiet; then
+            echo "No index changes to commit"
+          else
+            git commit -m "Auto-rebuild search index [skip ci]"
+            git push
+          fi

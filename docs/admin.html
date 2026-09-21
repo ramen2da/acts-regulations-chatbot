@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛠%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+  <title>규정 관리자</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <main class="wrap admin-wrap">
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">🛠</span>
+        <div>
+          <h1>규정 관리자</h1>
+          <p class="subtitle">규정 수정 · 신설, 별표 · 양식 편집. 저장하면 GitHub에 바로 커밋되고, 검색 색인은 몇 분 내 자동 갱신됩니다.</p>
+        </div>
+      </div>
+    </header>
+
+    <section id="tokenGate" class="card">
+      <h2>GitHub 접속 토큰</h2>
+      <p class="card-desc">
+        저장할 때 이 저장소에 직접 커밋하기 위해 필요합니다. 본인 GitHub 계정에서
+        <a href="https://github.com/settings/tokens/new?scopes=repo&description=acts-regulations-admin" target="_blank" rel="noopener">Personal Access Token(권한: repo)</a>
+        을 발급받아 붙여넣으세요. 이 브라우저에만 저장되고 외부로 전송되지 않습니다.
+      </p>
+      <div class="lookup-controls">
+        <input id="tokenInput" type="password" placeholder="ghp_..." />
+        <button id="tokenSaveBtn" class="primary-btn">저장</button>
+      </div>
+      <p id="tokenStatus" class="status"></p>
+    </section>
+
+    <section id="adminArea" class="hidden">
+      <section class="card">
+        <div class="admin-toolbar">
+          <button id="newRegBtn" class="primary-btn">＋ 새 규정 만들기</button>
+          <button id="logoutBtn" class="ghost-btn">토큰 지우기</button>
+        </div>
+        <div id="regList" class="reg-list"></div>
+      </section>
+
+      <section id="editorCard" class="card hidden">
+        <h2 id="editorHeading">규정 편집</h2>
+
+        <div class="editor-meta">
+          <label>규정명
+            <input id="fTitle" type="text" />
+          </label>
+          <label>카테고리
+            <select id="fCategory">
+              <option>정관</option>
+              <option>대학</option>
+              <option>대학원</option>
+              <option>일반행정</option>
+              <option>부속기관 및 부설기관</option>
+              <option>산학협력단</option>
+            </select>
+          </label>
+          <label>순서(카테고리 내)
+            <input id="fOrder" type="number" min="1" />
+          </label>
+        </div>
+
+        <h3>조항 / 별표 / 양식</h3>
+        <div id="sectionsList" class="sections-list"></div>
+        <button id="addSectionBtn" class="ghost-btn">+ 항목 추가</button>
+
+        <div class="editor-actions">
+          <button id="saveBtn" class="primary-btn">저장 (GitHub에 커밋)</button>
+          <button id="deleteRegBtn" class="danger-btn">이 규정 삭제</button>
+          <button id="cancelBtn" class="ghost-btn">취소</button>
+        </div>
+        <p id="saveStatus" class="status"></p>
+      </section>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>
